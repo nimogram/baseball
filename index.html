@@ -41,14 +41,21 @@
             50% { opacity: 0; }
         }
         .slide-in-right {
-            animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .slide-out-right {
+            animation: slideOutRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         @keyframes slideInRight {
             from { transform: translateX(100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
         }
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
         .fade-in {
-            animation: fadeIn 0.2s ease-out forwards;
+            animation: fadeIn 0.3s ease-out forwards;
         }
         @keyframes fadeIn {
             from { opacity: 0; }
@@ -60,7 +67,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+        const { useState, useEffect } = React;
 
         const Icon = ({ name, size = 24 }) => {
             const icons = {
@@ -93,6 +100,7 @@
             const [level, setLevel] = useState(1);
             const [checkedItems, setCheckedItems] = useState({});
             const [activeCategory, setActiveCategory] = useState(null);
+            const [isExiting, setIsExiting] = useState(false);
             const [view, setView] = useState('main'); 
             const [advisorIndex, setAdvisorIndex] = useState(0);
             const [typedText, setTypedText] = useState("");
@@ -179,13 +187,25 @@
                 });
             };
 
+            const handleClose = () => {
+                setIsExiting(true);
+                setTimeout(() => {
+                    setActiveCategory(null);
+                    setIsExiting(false);
+                }, 350);
+            };
+
             const completeTraining = () => {
                 if (bp === 0) return;
                 const clearedItems = [];
                 categories.forEach(cat => {
                     cat.items.forEach(item => {
                         if (checkedItems[item.id]) {
-                            clearedItems.push({ label: item.label, category: cat.name });
+                            clearedItems.push({ 
+                                label: item.label, 
+                                category: cat.name,
+                                color: cat.color 
+                            });
                         }
                     });
                 });
@@ -199,6 +219,7 @@
                 setCheckedItems({});
                 setBp(0);
                 setView('history');
+                setActiveCategory(null);
             };
 
             useEffect(() => {
@@ -274,63 +295,59 @@
             return (
                 <div className="flex flex-col h-screen max-w-md mx-auto overflow-hidden relative shadow-2xl bg-[#0a192f]">
                     
-                    {/* Header: Hidden when activeCategory is selected to save space */}
-                    {!activeCategory && (
-                        <div className="px-6 pt-10 pb-4 shrink-0 bg-gradient-to-b from-[#0a192f] to-transparent z-10 fade-in">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <div className="text-[10px] text-[#00E676] font-bold tracking-[0.2em] opacity-80 uppercase leading-none">Baseball Logic v2.2</div>
-                                    <div className="flex items-baseline gap-1 mt-1">
-                                        <span className="text-6xl font-black italic tracking-tighter text-white leading-none">{bp}</span>
-                                        <span className="text-xl font-bold opacity-60 italic text-white">BP</span>
-                                    </div>
-                                </div>
-                                <div className="flex gap-3">
-                                    <button onClick={() => setView('history')} className={`p-2.5 rounded-2xl bg-white/5 ${view === 'history' ? 'text-[#00E676] bg-white/10' : 'text-white/40 shadow-inner'}`}>
-                                        <Icon name="history" size={20} />
-                                    </button>
-                                    <button onClick={() => setView('manage')} className={`p-2.5 rounded-2xl bg-white/5 ${view === 'manage' ? 'text-[#00E676] bg-white/10' : 'text-white/40 shadow-inner'}`}>
-                                        <Icon name="settings" size={20} />
-                                    </button>
-                                    <button onClick={() => {setView('main'); setActiveCategory(null);}} className={`p-2.5 rounded-2xl bg-white/5 ${view === 'main' && !activeCategory ? 'text-[#00E676] bg-white/10' : 'text-white/40 shadow-inner'}`}>
-                                        <Icon name="home" size={20} />
-                                    </button>
+                    {/* Header */}
+                    <div className={`px-6 pt-10 pb-4 shrink-0 bg-gradient-to-b from-[#0a192f] to-transparent z-10 transition-all duration-500 ${activeCategory ? 'opacity-20 blur-[2px]' : 'opacity-100'}`}>
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <div className="text-[10px] text-[#00E676] font-bold tracking-[0.2em] opacity-80 uppercase leading-none">Baseball Logic v2.5</div>
+                                <div className="flex items-baseline gap-1 mt-1">
+                                    <span className="text-6xl font-black italic tracking-tighter text-white leading-none">{bp}</span>
+                                    <span className="text-xl font-bold opacity-60 italic text-white">BP</span>
                                 </div>
                             </div>
-
-                            <div className="space-y-2 mt-4">
-                                <div className="flex justify-between items-end text-[10px] font-bold uppercase tracking-wider">
-                                    <div className="text-[#00E676]">Level.{Math.floor(bp / 200) + 1}</div>
-                                    <div className="text-white/40">Next: {200 - (bp % 200)} BP</div>
-                                </div>
-                                <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden border border-white/10">
-                                    <div className="h-full bg-[#00E676] transition-all duration-700 ease-out neo-shadow" style={{ width: `${progress}%` }} />
-                                </div>
+                            <div className="flex gap-3">
+                                <button onClick={() => setView('history')} className={`p-2.5 rounded-2xl bg-white/5 ${view === 'history' ? 'text-[#00E676] bg-white/10' : 'text-white/40 shadow-inner'}`}>
+                                    <Icon name="history" size={20} />
+                                </button>
+                                <button onClick={() => setView('manage')} className={`p-2.5 rounded-2xl bg-white/5 ${view === 'manage' ? 'text-[#00E676] bg-white/10' : 'text-white/40 shadow-inner'}`}>
+                                    <Icon name="settings" size={20} />
+                                </button>
+                                <button onClick={() => {setView('main'); setActiveCategory(null);}} className={`p-2.5 rounded-2xl bg-white/5 ${view === 'main' && !activeCategory ? 'text-[#00E676] bg-white/10' : 'text-white/40 shadow-inner'}`}>
+                                    <Icon name="home" size={20} />
+                                </button>
                             </div>
                         </div>
-                    )}
 
-                    {/* Advisor: Hidden when activeCategory is selected to save space */}
-                    {!activeCategory && view === 'main' && (
-                        <div className="px-4 mb-4 shrink-0 z-10 fade-in">
-                            <div className="bg-[#00E6760a] backdrop-blur-md border border-[#00E67633] rounded-3xl p-5 flex flex-col gap-1 min-h-[90px] justify-center relative overflow-hidden">
-                                <div className="absolute top-0 left-0 w-1 h-full bg-[#00E67633]"></div>
-                                <div className="text-[10px] font-bold text-[#00E676] opacity-60 uppercase tracking-widest flex items-center gap-2 mb-1">
-                                    <Icon name="shield" size={12} />
-                                    Coach Advisor
-                                </div>
-                                <div className={`text-sm font-bold text-white leading-relaxed ${isTyping ? 'cursor-blink' : ''}`}>
-                                    {typedText}
-                                </div>
+                        <div className="space-y-2 mt-4">
+                            <div className="flex justify-between items-end text-[10px] font-bold uppercase tracking-wider">
+                                <div className="text-[#00E676]">Level.{Math.floor(bp / 200) + 1}</div>
+                                <div className="text-white/40 uppercase">Next Goal</div>
+                            </div>
+                            <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden border border-white/10">
+                                <div className="h-full bg-[#00E676] transition-all duration-700 ease-out neo-shadow" style={{ width: `${progress}%` }} />
                             </div>
                         </div>
-                    )}
+                    </div>
+
+                    {/* Advisor */}
+                    <div className={`px-4 mb-4 shrink-0 z-10 transition-all duration-500 ${activeCategory || view !== 'main' ? 'opacity-0 h-0 overflow-hidden mb-0' : 'opacity-100 h-auto'}`}>
+                        <div className="bg-[#00E6760a] backdrop-blur-md border border-[#00E67633] rounded-3xl p-5 flex flex-col gap-1 min-h-[90px] justify-center relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-1 h-full bg-[#00E67633]"></div>
+                            <div className="text-[10px] font-bold text-[#00E676] opacity-60 uppercase tracking-widest flex items-center gap-2 mb-1">
+                                <Icon name="shield" size={12} />
+                                Coach Advisor
+                            </div>
+                            <div className={`text-sm font-bold text-white leading-relaxed ${isTyping ? 'cursor-blink' : ''}`}>
+                                {typedText}
+                            </div>
+                        </div>
+                    </div>
 
                     {/* Main Container */}
                     <div className="flex-1 relative overflow-hidden px-4">
                         
                         {/* 1. Main Grid */}
-                        <div className={`category-grid absolute inset-x-4 ${activeCategory || view !== 'main' ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100 transition-opacity duration-200'}`}>
+                        <div className={`category-grid absolute inset-x-4 transition-all duration-500 ${activeCategory ? 'opacity-40 blur-[4px] scale-95 pointer-events-none' : (view !== 'main' ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100')}`}>
                             {categories.map((cat) => (
                                 <button 
                                     key={cat.id} 
@@ -351,11 +368,11 @@
                             ))}
                         </div>
 
-                        {/* 2. Detail View (Full Screen Checklist) */}
+                        {/* 2. Detail View (High Transparency Glass UI) */}
                         {activeCategory && (
-                            <div className="absolute inset-0 z-20 px-4 slide-in-right bg-[#0a192f] flex flex-col pt-8 pb-6">
+                            <div className={`absolute inset-0 z-20 px-4 ${isExiting ? 'slide-out-right' : 'slide-in-right'} bg-[#0a192f44] backdrop-blur-md flex flex-col pt-8 pb-6`}>
                                 <div className="flex items-center justify-between mb-6">
-                                    <button onClick={() => setActiveCategory(null)} className="flex items-center gap-2 text-white/50 text-xs font-bold bg-white/5 px-4 py-2 rounded-full border border-white/10">
+                                    <button onClick={handleClose} className="flex items-center gap-2 text-white/70 text-xs font-bold bg-white/10 px-4 py-2 rounded-full border border-white/20 active:bg-white/30 transition-all">
                                         <Icon name="chevronLeft" size={14} /> 戻る
                                     </button>
                                     <div className="text-2xl font-black italic text-[#00E676] uppercase tracking-tighter">
@@ -368,21 +385,29 @@
                                         <button 
                                             key={item.id} 
                                             onClick={() => toggleItem(item.id, item.points)} 
-                                            className={`w-full flex items-center gap-4 p-5 rounded-[2rem] border transition-all duration-300 ${
+                                            className={`w-full flex items-center gap-4 p-5 rounded-[2.5rem] border transition-all duration-300 backdrop-blur-xl ${
                                                 checkedItems[item.id] 
                                                 ? `bg-gradient-to-r ${currentCategory.color} border-white/40 shadow-lg scale-[0.98]` 
-                                                : `bg-white/5 border-white/5 opacity-60`
-                                            } ${checkedItems[item.id] ? '' : `bg-gradient-to-r ${currentCategory.color} bg-opacity-20`}`}
+                                                : `bg-white/5 border-white/10 opacity-70`
+                                            } ${checkedItems[item.id] ? '' : `bg-gradient-to-r ${currentCategory.color} bg-opacity-20 border-white/5`}`}
                                         >
-                                            <div className={checkedItems[item.id] ? 'text-white' : 'text-white/10'}><Icon name={checkedItems[item.id] ? "check" : "circle"} size={26} /></div>
-                                            <div className="flex-1 text-left text-white leading-tight"><div className={`text-base font-bold ${checkedItems[item.id] ? 'opacity-100' : 'opacity-80'}`}>{item.label}</div></div>
-                                            <div className={`text-lg font-black italic ${checkedItems[item.id] ? 'text-white' : 'text-white/20'}`}>+{item.points}</div>
+                                            <div className={checkedItems[item.id] ? 'text-white' : 'text-white/20'}>
+                                                <Icon name={checkedItems[item.id] ? "check" : "circle"} size={26} />
+                                            </div>
+                                            <div className="flex-1 text-left text-white leading-tight">
+                                                <div className={`text-base font-bold ${checkedItems[item.id] ? 'opacity-100' : 'opacity-80'}`}>
+                                                    {item.label}
+                                                </div>
+                                            </div>
+                                            <div className={`text-lg font-black italic ${checkedItems[item.id] ? 'text-white' : 'text-white/30'}`}>
+                                                +{item.points}
+                                            </div>
                                         </button>
                                     ))}
                                 </div>
 
-                                <button onClick={completeTraining} className="w-full mt-6 py-5 bg-[#00E676] text-[#0a192f] rounded-3xl font-black italic uppercase text-lg shadow-[0_0_20px_#00E67666] active:scale-95 transition-transform shrink-0">
-                                    Save & Exit
+                                <button onClick={completeTraining} className="w-full mt-6 py-5 bg-[#00E676] text-[#0a192f] rounded-[2.5rem] font-black italic uppercase text-lg shadow-[0_0_30px_#00E67666] active:scale-95 transition-transform shrink-0">
+                                    Training Sync
                                 </button>
                             </div>
                         )}
@@ -419,53 +444,51 @@
                             </div>
                         )}
 
-                        {/* 4. History View */}
+                        {/* 4. History View (Color-coded Backgrounds) */}
                         {view === 'history' && (
                             <div className="absolute inset-0 z-30 px-4 fade-in bg-[#0a192f] flex flex-col pt-2 pb-24 overflow-y-auto hide-scrollbar">
                                 <h2 className="text-2xl font-black italic text-[#00E676] mb-6 uppercase tracking-tight">Activity Logs</h2>
                                 {history.length === 0 ? (
                                     <div className="text-center opacity-30 mt-20 font-bold uppercase tracking-widest text-sm">Empty History</div>
                                 ) : (
-                                    <div className="space-y-4">
+                                    <div className="space-y-6">
                                         {history.map((entry, idx) => (
-                                            <div key={idx} className="bg-white/5 p-6 rounded-[2rem] border border-white/10 shadow-sm">
+                                            <div key={idx} className="bg-white/5 p-6 rounded-[2.5rem] border border-white/10 shadow-sm">
                                                 <div className="flex justify-between items-center mb-4 border-b border-white/5 pb-2">
                                                     <div className="text-[10px] opacity-40 font-bold uppercase tracking-tighter">{entry.date}</div>
                                                     <div className="text-2xl font-black italic text-[#00E676]">+{entry.bp}BP</div>
                                                 </div>
-                                                <div className="space-y-2">
+                                                <div className="space-y-3">
                                                     <div className="text-[9px] font-black uppercase text-white/30 tracking-widest mb-1">Cleared Missions:</div>
                                                     {entry.details && entry.details.map((detail, dIdx) => (
-                                                        <div key={dIdx} className="flex items-start gap-2 text-xs font-bold leading-snug">
-                                                            <div className="mt-1 w-1 h-1 rounded-full bg-[#00E676] shrink-0"></div>
-                                                            <div className="opacity-80">
-                                                                <span className="opacity-40 text-[9px] mr-1">[{detail.category}]</span>
-                                                                {detail.label}
+                                                        <div key={dIdx} className={`flex items-start gap-3 p-3 rounded-2xl bg-gradient-to-r ${detail.color} border border-white/10 mb-2 shadow-sm`}>
+                                                            <div className="mt-1.5 w-2 h-2 rounded-full bg-white shrink-0 shadow-[0_0_5px_rgba(255,255,255,0.5)]"></div>
+                                                            <div className="text-xs font-bold leading-snug">
+                                                                <span className="text-white/40 text-[9px] block uppercase tracking-tighter mb-0.5">{detail.category}</span>
+                                                                <span className="text-white">{detail.label}</span>
                                                             </div>
                                                         </div>
                                                     ))}
                                                 </div>
                                             </div>
                                         ))}
-                                        <button onClick={() => {if(confirm("履歴を全て削除しますか？")) setHistory([]);}} className="w-full py-6 text-red-500/50 text-[10px] font-black uppercase tracking-[0.4em] mt-4">Flush All Logs</button>
+                                        <button onClick={() => {if(confirm("履歴を全て削除しますか？")) setHistory([]);}} className="w-full py-6 text-red-500/50 text-[10px] font-black uppercase tracking-[0.4em] mt-4">Flush Logs</button>
                                     </div>
                                 )}
                             </div>
                         )}
                     </div>
 
-                    {/* Footer Nav - Only shown when not in category detail to avoid overlap */}
-                    {!activeCategory && (
-                        <div className="absolute bottom-4 left-0 right-0 px-8 pointer-events-none z-10 fade-in">
-                            <div className="flex justify-between items-center text-[9px] font-bold text-white/20 uppercase tracking-[0.4em]">
-                                <div className="flex items-center gap-2">
-                                    <span className="w-1 h-1 rounded-full bg-[#00E676] shadow-[0_0_5px_#00E676] animate-pulse"></span>
-                                    Online Status
-                                </div>
-                                <div>System v2.2</div>
+                    {/* Footer Nav */}
+                    <div className={`absolute bottom-4 left-0 right-0 px-8 pointer-events-none z-10 transition-opacity duration-500 ${activeCategory ? 'opacity-0' : 'opacity-100'}`}>
+                        <div className="flex justify-between items-center text-[9px] font-bold text-white/20 uppercase tracking-[0.4em]">
+                            <div className="flex items-center gap-2">
+                                <span className="w-1 h-1 rounded-full bg-[#00E676] shadow-[0_0_5px_#00E676] animate-pulse"></span>
+                                User: NIMOGRAM
                             </div>
+                            <div>Strategic OS v2.5</div>
                         </div>
-                    )}
+                    </div>
                 </div>
             );
         };
