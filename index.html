@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Baseball Logic Mobile</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            background-color: #0a192f;
+            overscroll-behavior: none;
+            color: white;
+            overflow: hidden;
+        }
+        .neo-shadow {
+            box-shadow: 0 0 20px rgba(0, 230, 118, 0.2);
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        button:active {
+            transform: scale(0.96);
+        }
+        .cursor-blink::after {
+            content: '_';
+            animation: blink 1s infinite;
+            color: #00E676;
+            margin-left: 2px;
+        }
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+        .slide-in-right {
+            animation: slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const Icon = ({ name, size = 24 }) => {
+            const icons = {
+                target: <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM12 18a6 6 0 100-12 6 6 0 000 12zM12 14a2 2 0 100-4 2 2 0 000 4z" />,
+                shield: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />,
+                users: <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />,
+                heart: <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l8.78-8.78 1.06-1.06a5.5 5.5 0 000-7.78z" />,
+                activity: <path d="M22 12h-4l-3 9L9 3l-3 9H2" />,
+                dumbbell: <path d="M6 7h12M6 17h12M2 9v6a2 2 0 002 2h2a2 2 0 002-2V9a2 2 0 00-2-2H4a2 2 0 00-2 2zM16 9v6a2 2 0 002 2h2a2 2 0 002-2V9a2 2 0 00-2-2h-2a2 2 0 00-2 2z" />,
+                smile: <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zM8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01" />,
+                chevronLeft: <path d="M15 18l-6-6 6-6" />,
+                home: <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2zM9 22V12h6v10" />,
+                check: <path d="M22 11.08V12a10 10 0 11-5.93-9.14M22 4L12 14.01l-3-3" />,
+                circle: <circle cx="12" cy="12" r="10" />,
+                settings: <React.Fragment><path d="M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.08a2 2 0 01-1-1.74v-.5a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z" /><circle cx="12" cy="12" r="3" /></React.Fragment>,
+                history: <React.Fragment><path d="M3 3v5h5M3.05 13A9 9 0 106 5.3L3 8" /><path d="M12 7v5l3 3" /></React.Fragment>,
+                plus: <path d="M12 5v14M5 12h14" />,
+                trash: <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6" />,
+                edit: <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z" />
+            };
+            return (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    {icons[name]}
+                </svg>
+            );
+        };
+
+        const App = () => {
+            const [bp, setBp] = useState(0);
+            const [level, setLevel] = useState(1);
+            const [checkedItems, setCheckedItems] = useState({});
+            const [activeCategory, setActiveCategory] = useState(null);
+            const [view, setView] = useState('main'); 
+            const [advisorIndex, setAdvisorIndex] = useState(0);
+            const [typedText, setTypedText] = useState("");
+            const [isTyping, setIsTyping] = useState(false);
+            
+            // Custom Data with persisted state
+            const [categories, setCategories] = useState(() => {
+                const saved = localStorage.getItem('bb_categories');
+                return saved ? JSON.parse(saved) : [
+                    { id: 'batting', name: 'バッティング', icon: 'target', color: 'from-indigo-500 to-indigo-900',
+                      items: [
+                        { id: 'b1', label: '右肘の内側で押すイメージ', points: 30 },
+                        { id: 'b2', label: 'タイミングをしっかり取る', points: 20 },
+                        { id: 'b3', label: 'バットの芯で捉える', points: 20 },
+                        { id: 'b4', label: '初球から積極的に狙う', points: 30 },
+                        { id: 'b5', label: 'バント：右足重心・体を引く', points: 50 },
+                      ]
+                    },
+                    { id: 'defense', name: '守備', icon: 'smile', color: 'from-red-500 to-red-900',
+                      items: [
+                        { id: 'd1', label: 'フライを額の上で捕球', points: 20 },
+                        { id: 'd2', label: '落下地点への最速移動', points: 25 },
+                        { id: 'd3', label: 'シングル捕球の意識', points: 15 },
+                        { id: 'd4', label: '焦らず落ち着いて送球', points: 20 },
+                      ]
+                    },
+                    { id: 'baserunning', name: '走塁', icon: 'activity', color: 'from-teal-500 to-teal-900',
+                      items: [
+                        { id: 'r1', label: '全力疾走（移動＝練習）', points: 25 },
+                        { id: 'r2', label: '状況判断と次の塁の狙い', points: 30 },
+                      ]
+                    },
+                    { id: 'team', name: 'チーム', icon: 'users', color: 'from-blue-500 to-blue-900',
+                      items: [
+                        { id: 't1', label: '雰囲気を良くする声出し', points: 30 },
+                        { id: 't2', label: '私語をしている人への注意', points: 40 },
+                        { id: 't3', label: '心得を周囲に教える', points: 30 },
+                      ]
+                    },
+                    { id: 'mindset', name: '心構え', icon: 'heart', color: 'from-pink-500 to-pink-900',
+                      items: [
+                        { id: 'm1', label: '毎朝の「心得」確認', points: 15 },
+                        { id: 'm2', label: '常に全力・気を抜かない', points: 20 },
+                        { id: 'm3', label: '応援される選手への意識', points: 25 },
+                      ]
+                    },
+                    { id: 'bodybuilding', name: '体づくり', icon: 'dumbbell', color: 'from-emerald-500 to-emerald-900',
+                      items: [
+                        { id: 'p1', label: '体幹トレーニングの完遂', points: 30 },
+                        { id: 'p2', label: 'ラダー・リズムアップ', points: 25 },
+                        { id: 'p3', label: 'ハードル・動き作り', points: 20 },
+                        { id: 'p4', label: 'シャトルラン・持久力', points: 40 },
+                      ]
+                    }
+                ];
+            });
+
+            const [history, setHistory] = useState(() => {
+                const saved = localStorage.getItem('bb_history');
+                return saved ? JSON.parse(saved) : [];
+            });
+
+            const advisorMessages = [
+                "バッティングは右肘の内側で『押す』イメージ！",
+                "体づくりが全ての基本。体幹トレは嘘をつきません。",
+                "フライは額の上で捕球。落下地点へは最速で移動！",
+                "私語を注意できるのが、真のリーダーへの第一歩。",
+                "初球から狙う積極性が、相手投手にプレッシャーを与えます。",
+                "心得は毎朝の儀式。応援される選手を目指そう。"
+            ];
+
+            useEffect(() => {
+                localStorage.setItem('bb_categories', JSON.stringify(categories));
+            }, [categories]);
+
+            useEffect(() => {
+                localStorage.setItem('bb_history', JSON.stringify(history));
+            }, [history]);
+
+            const toggleItem = (itemId, points) => {
+                setCheckedItems(prev => {
+                    const isChecked = !prev[itemId];
+                    setBp(curr => isChecked ? curr + points : Math.max(0, curr - points));
+                    return { ...prev, [itemId]: isChecked };
+                });
+            };
+
+            const completeTraining = () => {
+                if (bp === 0) return;
+                // Get snapshots of checked item names for detailed log
+                const clearedItems = [];
+                categories.forEach(cat => {
+                    cat.items.forEach(item => {
+                        if (checkedItems[item.id]) {
+                            clearedItems.push({ label: item.label, category: cat.name });
+                        }
+                    });
+                });
+
+                const entry = {
+                    date: new Date().toLocaleString('ja-JP', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }),
+                    bp: bp,
+                    details: clearedItems
+                };
+                setHistory([entry, ...history]);
+                setCheckedItems({});
+                setBp(0);
+                setView('history');
+            };
+
+            // Typing Logic (100ms)
+            useEffect(() => {
+                setTypedText("");
+                setIsTyping(true);
+                let i = 0;
+                const fullText = advisorMessages[advisorIndex];
+                const timer = setInterval(() => {
+                    setTypedText(fullText.substring(0, i + 1));
+                    i++;
+                    if (i >= fullText.length) {
+                        clearInterval(timer);
+                        setIsTyping(false);
+                    }
+                }, 100);
+                return () => clearInterval(timer);
+            }, [advisorIndex]);
+
+            useEffect(() => {
+                const cycle = setInterval(() => setAdvisorIndex(c => (c + 1) % advisorMessages.length), 10000);
+                return () => clearInterval(cycle);
+            }, []);
+
+            useEffect(() => {
+                const newLevel = Math.floor(bp / 200) + 1;
+                if (newLevel !== level) setLevel(newLevel);
+            }, [bp]);
+
+            const progress = (bp % 200) / 2;
+            const currentCategory = categories.find(c => c.id === activeCategory);
+
+            // Management Logic
+            const addItem = (catId) => {
+                const label = prompt("新しい項目名を入力してください");
+                if (!label) return;
+                const points = parseInt(prompt("獲得BPを入力してください", "20"));
+                if (isNaN(points)) return;
+                setCategories(categories.map(c => {
+                    if (c.id === catId) {
+                        return { ...c, items: [...c.items, { id: 'custom_' + Date.now(), label, points }] };
+                    }
+                    return c;
+                }));
+            };
+
+            const editItem = (catId, itemId) => {
+                const category = categories.find(c => c.id === catId);
+                const item = category.items.find(i => i.id === itemId);
+                const newLabel = prompt("項目名を修正してください", item.label);
+                if (!newLabel) return;
+                const newPoints = parseInt(prompt("BPを修正してください", item.points));
+                if (isNaN(newPoints)) return;
+
+                setCategories(categories.map(c => {
+                    if (c.id === catId) {
+                        return { 
+                            ...c, 
+                            items: c.items.map(i => i.id === itemId ? { ...i, label: newLabel, points: newPoints } : i) 
+                        };
+                    }
+                    return c;
+                }));
+            };
+
+            const deleteItem = (catId, itemId) => {
+                if (!confirm("この項目を削除しますか？")) return;
+                setCategories(categories.map(c => {
+                    if (c.id === catId) {
+                        return { ...c, items: c.items.filter(i => i.id !== itemId) };
+                    }
+                    return c;
+                }));
+            };
+
+            return (
+                <div className="flex flex-col h-screen max-w-md mx-auto overflow-hidden relative shadow-2xl bg-[#0a192f]">
+                    {/* Header */}
+                    <div className="px-6 pt-10 pb-4 shrink-0 bg-gradient-to-b from-[#0a192f] to-transparent z-10">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <div className="text-[10px] text-[#00E676] font-bold tracking-[0.2em] opacity-80 uppercase leading-none">Baseball Logic v2.1</div>
+                                <div className="flex items-baseline gap-1 mt-1">
+                                    <span className="text-6xl font-black italic tracking-tighter text-white leading-none">{bp}</span>
+                                    <span className="text-xl font-bold opacity-60 italic text-white">BP</span>
+                                </div>
+                            </div>
+                            <div className="flex gap-3">
+                                <button onClick={() => setView('history')} className={`p-2.5 rounded-2xl bg-white/5 ${view === 'history' ? 'text-[#00E676] bg-white/10' : 'text-white/40 shadow-inner'}`}>
+                                    <Icon name="history" size={20} />
+                                </button>
+                                <button onClick={() => setView('manage')} className={`p-2.5 rounded-2xl bg-white/5 ${view === 'manage' ? 'text-[#00E676] bg-white/10' : 'text-white/40 shadow-inner'}`}>
+                                    <Icon name="settings" size={20} />
+                                </button>
+                                <button onClick={() => {setView('main'); setActiveCategory(null);}} className={`p-2.5 rounded-2xl bg-white/5 ${view === 'main' && !activeCategory ? 'text-[#00E676] bg-white/10' : 'text-white/40 shadow-inner'}`}>
+                                    <Icon name="home" size={20} />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2 mt-4">
+                            <div className="flex justify-between items-end text-[10px] font-bold uppercase tracking-wider">
+                                <div className="text-[#00E676]">Level.{Math.floor(bp / 200) + 1}</div>
+                                <div className="text-white/40">Goal: 200 BP</div>
+                            </div>
+                            <div className="w-full h-3 bg-white/5 rounded-full overflow-hidden border border-white/10">
+                                <div className="h-full bg-[#00E676] transition-all duration-700 ease-out neo-shadow" style={{ width: `${progress}%` }} />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Advisor */}
+                    <div className="px-4 mb-4 shrink-0 z-10">
+                        <div className="bg-[#00E6760a] backdrop-blur-md border border-[#00E67633] rounded-3xl p-5 flex flex-col gap-1 min-h-[90px] justify-center relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-1 h-full bg-[#00E67633]"></div>
+                            <div className="text-[10px] font-bold text-[#00E676] opacity-60 uppercase tracking-widest flex items-center gap-2 mb-1">
+                                <Icon name="shield" size={12} />
+                                Coach Advisor
+                            </div>
+                            <div className={`text-sm font-bold text-white leading-relaxed ${isTyping ? 'cursor-blink' : ''}`}>
+                                {typedText}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Main Container */}
+                    <div className="flex-1 relative overflow-hidden px-4">
+                        
+                        {/* 1. Main Grid */}
+                        <div className={`category-grid absolute inset-x-4 ${activeCategory || view !== 'main' ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100 transition-opacity duration-200'}`}>
+                            {categories.map((cat) => (
+                                <button 
+                                    key={cat.id} 
+                                    onClick={() => setActiveCategory(cat.id)} 
+                                    className={`relative flex flex-col items-start p-5 rounded-[2.5rem] h-44 border-b-4 border-black/40 bg-gradient-to-br ${cat.color} text-white shadow-lg`}
+                                >
+                                    <div className="p-2.5 bg-white/10 rounded-2xl mb-auto"><Icon name={cat.icon} size={24} /></div>
+                                    <div className="text-left w-full mt-2">
+                                        <div className="text-lg font-black italic leading-none tracking-tight uppercase">{cat.name}</div>
+                                        <div className="flex justify-between items-center mt-3">
+                                            <div className="text-[9px] opacity-70 font-bold uppercase tracking-widest bg-black/20 px-2 py-1 rounded-lg">
+                                                {cat.items.filter(i => checkedItems[i.id]).length}/{cat.items.length}
+                                            </div>
+                                            <Icon name="chevronRight" size={14} />
+                                        </div>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* 2. Detail View (Slide in from Right) */}
+                        {activeCategory && (
+                            <div className="absolute inset-0 z-20 px-4 slide-in-right bg-[#0a192fcc] backdrop-blur-2xl flex flex-col pb-20">
+                                <div className="flex items-center justify-between mb-4 mt-2">
+                                    <button onClick={() => setActiveCategory(null)} className="flex items-center gap-2 text-white/50 text-xs font-bold bg-white/5 px-4 py-2 rounded-full border border-white/10">
+                                        <Icon name="chevronLeft" size={14} /> TOP
+                                    </button>
+                                    <div className="text-[10px] font-black text-[#00E676] opacity-40 uppercase tracking-widest">Active Mission</div>
+                                </div>
+                                
+                                <div className={`flex items-center gap-4 p-5 rounded-[2.5rem] mb-6 bg-gradient-to-br ${currentCategory.color} border border-white/20 shadow-2xl`}>
+                                    <div className="p-3 bg-white/20 rounded-2xl text-white"><Icon name={currentCategory.icon} size={32} /></div>
+                                    <h2 className="text-2xl font-black italic text-white uppercase">{currentCategory.name}</h2>
+                                </div>
+
+                                <div className="flex-1 overflow-y-auto hide-scrollbar space-y-3">
+                                    {currentCategory.items.map(item => (
+                                        <button 
+                                            key={item.id} 
+                                            onClick={() => toggleItem(item.id, item.points)} 
+                                            className={`w-full flex items-center gap-4 p-5 rounded-[2rem] border transition-all duration-300 ${
+                                                checkedItems[item.id] 
+                                                ? `bg-gradient-to-r ${currentCategory.color} border-white/40 shadow-lg scale-[0.98]` 
+                                                : `bg-white/5 border-white/5 opacity-60`
+                                            } ${checkedItems[item.id] ? '' : `bg-gradient-to-r ${currentCategory.color} bg-opacity-20`}`}
+                                        >
+                                            <div className={checkedItems[item.id] ? 'text-white' : 'text-white/10'}><Icon name={checkedItems[item.id] ? "check" : "circle"} size={26} /></div>
+                                            <div className="flex-1 text-left text-white leading-tight"><div className={`text-base font-bold ${checkedItems[item.id] ? 'opacity-100' : 'opacity-80'}`}>{item.label}</div></div>
+                                            <div className={`text-lg font-black italic ${checkedItems[item.id] ? 'text-white' : 'text-white/20'}`}>+{item.points}</div>
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <button onClick={completeTraining} className="w-full mt-4 py-5 bg-[#00E676] text-[#0a192f] rounded-3xl font-black italic uppercase text-lg shadow-[0_0_20px_#00E67666] active:scale-95 transition-transform shrink-0 mb-4">
+                                    Training Complete!
+                                </button>
+                            </div>
+                        )}
+
+                        {/* 3. Manage View */}
+                        {view === 'manage' && (
+                            <div className="absolute inset-0 z-30 px-4 fade-in bg-[#0a192f] flex flex-col pt-2 pb-24 overflow-y-auto hide-scrollbar">
+                                <h2 className="text-2xl font-black italic text-[#00E676] mb-6 uppercase tracking-tight">Mission Config</h2>
+                                {categories.map(cat => (
+                                    <div key={cat.id} className="mb-6 bg-white/5 rounded-[2rem] p-5 border border-white/10">
+                                        <div className="flex justify-between items-center mb-4">
+                                            <div className="flex items-center gap-2 font-black italic text-lg uppercase leading-none">
+                                                <div className={`w-3 h-3 rounded-full bg-gradient-to-br ${cat.color} shadow-sm`}></div>
+                                                {cat.name}
+                                            </div>
+                                            <button onClick={() => addItem(cat.id)} className="p-2 bg-[#00E67622] text-[#00E676] rounded-xl active:bg-[#00E67644]"><Icon name="plus" size={18} /></button>
+                                        </div>
+                                        <div className="space-y-2">
+                                            {cat.items.map(item => (
+                                                <div key={item.id} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
+                                                    <div className="flex-1 text-sm font-bold opacity-80 leading-tight">
+                                                        {item.label} 
+                                                        <div className="text-[10px] text-[#00E676] opacity-60 mt-0.5 font-black">+{item.points} BP</div>
+                                                    </div>
+                                                    <div className="flex gap-2">
+                                                        <button onClick={() => editItem(cat.id, item.id)} className="text-white/40 p-2 hover:text-[#00E676] transition-colors"><Icon name="edit" size={18} /></button>
+                                                        <button onClick={() => deleteItem(cat.id, item.id)} className="text-red-500/40 p-2 hover:text-red-500 transition-colors"><Icon name="trash" size={18} /></button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* 4. History View (Detailed Logs) */}
+                        {view === 'history' && (
+                            <div className="absolute inset-0 z-30 px-4 fade-in bg-[#0a192f] flex flex-col pt-2 pb-24 overflow-y-auto hide-scrollbar">
+                                <h2 className="text-2xl font-black italic text-[#00E676] mb-6 uppercase tracking-tight">Activity Logs</h2>
+                                {history.length === 0 ? (
+                                    <div className="text-center opacity-30 mt-20 font-bold uppercase tracking-widest text-sm">Empty History</div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {history.map((entry, idx) => (
+                                            <div key={idx} className="bg-white/5 p-6 rounded-[2rem] border border-white/10 shadow-sm">
+                                                <div className="flex justify-between items-center mb-4 border-b border-white/5 pb-2">
+                                                    <div className="text-[10px] opacity-40 font-bold uppercase tracking-tighter">{entry.date}</div>
+                                                    <div className="text-2xl font-black italic text-[#00E676]">+{entry.bp}BP</div>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <div className="text-[9px] font-black uppercase text-white/30 tracking-widest mb-1">Cleared Missions:</div>
+                                                    {entry.details && entry.details.map((detail, dIdx) => (
+                                                        <div key={dIdx} className="flex items-start gap-2 text-xs font-bold leading-snug">
+                                                            <div className="mt-1 w-1 h-1 rounded-full bg-[#00E676] shrink-0"></div>
+                                                            <div className="opacity-80">
+                                                                <span className="opacity-40 text-[9px] mr-1">[{detail.category}]</span>
+                                                                {detail.label}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                        <button onClick={() => {if(confirm("履歴を全て削除しますか？")) setHistory([]);}} className="w-full py-6 text-red-500/50 text-[10px] font-black uppercase tracking-[0.4em] mt-4">Flush All Logs</button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Footer Nav */}
+                    <div className="absolute bottom-4 left-0 right-0 px-8 pointer-events-none z-10">
+                        <div className="flex justify-between items-center text-[9px] font-bold text-white/20 uppercase tracking-[0.4em]">
+                            <div className="flex items-center gap-2">
+                                <span className="w-1 h-1 rounded-full bg-[#00E676] shadow-[0_0_5px_#00E676] animate-pulse"></span>
+                                Online Status
+                            </div>
+                            <div>System v2.1</div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
