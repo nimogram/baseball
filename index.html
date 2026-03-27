@@ -117,7 +117,7 @@
                         { id: 'b5', label: 'バント：右足重心・引き', points: 50 },
                       ]
                     },
-                    { id: 'defense', name: '守備', icon: 'smile', color: 'from-red-500 to-red-900',
+                    { id: 'defense', name: '守備', icon: 'smile', color: 'from-amber-400 to-orange-700',
                       items: [
                         { id: 'd1', label: '足を止めずバウンドを合わせる', points: 20 },
                         { id: 'd2', label: 'ステップを使い下半身で送球', points: 25 },
@@ -125,7 +125,7 @@
                         { id: 'd4', label: '低姿勢：下から覗き込む', points: 20 },
                       ]
                     },
-                    { id: 'baserunning', name: '走塁', icon: 'activity', color: 'from-teal-500 to-teal-900',
+                    { id: 'baserunning', name: '走塁', icon: 'activity', color: 'from-sky-400 to-sky-700',
                       items: [
                         { id: 'r1', label: '全力疾走（移動＝練習）', points: 25 },
                         { id: 'r2', label: '状況判断と次の塁の狙い', points: 30 },
@@ -161,7 +161,7 @@
                 return saved ? JSON.parse(saved) : [];
             });
 
-            // BP Calculation logic from v3.0
+            // BP Calculation logic
             const currentSessionBp = useMemo(() => {
                 return categories.reduce((catSum, cat) => {
                     return catSum + cat.items.reduce((itemSum, item) => {
@@ -188,10 +188,10 @@
                 "グリップと足の距離を保つ『割れ』を作ろう。強いタメが打球を変える！",
                 "得意コースを明確に。甘い球を逃さない集中力が選球眼の正体ですよ。",
                 "変化球は軸足に体重を残し、懐まで呼び込んで逆方向へ打ち返そう！",
-                "バントは右足重心でバットは目の前。当たる瞬間に体を引くのがコツ！",
+                "バントは右足重心でバットは目の前. 当たる瞬間に体を引くのがコツ！",
                 "守備は足を止めない。自分から最適なバウンドを作りに行く姿勢が大切！",
                 "捕球から送球へのステップを素早く。下半身の力をボールに伝えよう。",
-                "投球ごとに『飛んできたらどう動くか』を常にシミュレーション！",
+                "投球ごとに『飛んできた時のシミュレーション』を常に。準備が全てです！",
                 "低い姿勢でボールを下から覗き込む。基本の体勢が確実な守備を生む！",
                 "私語をしている仲間には自分から注意。規律を守り『心を一つに』！",
                 "股関節と肩甲骨の可動域は、怪我防止とパフォーマンスに直結します。",
@@ -317,7 +317,7 @@
                     <div className={`px-6 pt-6 pb-2 shrink-0 bg-gradient-to-b from-[#0a192f] to-transparent z-10 transition-all duration-500 ${activeCategory ? 'opacity-20 blur-[2px]' : 'opacity-100'}`}>
                         <div className="flex justify-between items-start">
                             <div>
-                                <div className="text-[10px] text-[#00E676] font-bold tracking-[0.2em] opacity-80 uppercase leading-none">Baseball Logic v3.0</div>
+                                <div className="text-[10px] text-[#00E676] font-bold tracking-[0.2em] opacity-80 uppercase leading-none">Baseball Logic v3.1</div>
                                 <div className="flex items-baseline gap-1 mt-1">
                                     <span className="text-5xl font-black italic tracking-tighter text-white leading-none">{currentSessionBp}</span>
                                     <span className="text-lg font-bold opacity-60 italic text-white">BP</span>
@@ -355,7 +355,7 @@
                                 <Icon name="shield" size={10} />
                                 Coach Insight
                             </div>
-                            <div className={`text-xs font-bold text-white leading-relaxed ${isTyping ? 'cursor-blink' : ''}`}>
+                            <div className={`text-sm font-bold text-white leading-relaxed ${isTyping ? 'cursor-blink' : ''}`}>
                                 {typedText}
                             </div>
                         </div>
@@ -386,7 +386,7 @@
                             ))}
                         </div>
 
-                        {/* 2. Detail View (Fix: Added guard for currentCategory) */}
+                        {/* 2. Detail View */}
                         {activeCategory && currentCategory && (
                             <div className={`absolute inset-0 z-20 px-4 ${isExiting ? 'slide-out-right' : 'slide-in-right'} bg-[#0a192f44] backdrop-blur-md flex flex-col pt-4 pb-6`}>
                                 <div className="flex items-center justify-between mb-4">
@@ -503,7 +503,7 @@
                                 <span className="w-1 h-1 rounded-full bg-[#00E676] shadow-[0_0_5px_#00E676] animate-pulse"></span>
                                 User: NIMOGRAM
                             </div>
-                            <div>Strategic OS v3.0</div>
+                            <div>Strategic OS v3.1</div>
                         </div>
                     </div>
                 </div>
