@@ -38,14 +38,14 @@
             50% { opacity: 0; }
         }
         
-        /* Glowing Button Animation */
-        @keyframes pulse-glow {
-            0% { box-shadow: 0 0 15px rgba(0, 230, 118, 0.4); transform: scale(1); }
-            50% { box-shadow: 0 0 45px rgba(0, 230, 118, 0.9); transform: scale(1.03); }
-            100% { box-shadow: 0 0 15px rgba(0, 230, 118, 0.4); transform: scale(1); }
+        /* Golden Glowing Button Animation */
+        @keyframes pulse-glow-gold {
+            0% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); transform: scale(1); }
+            50% { box-shadow: 0 0 50px rgba(255, 215, 0, 0.9); transform: scale(1.03); }
+            100% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); transform: scale(1); }
         }
-        .animate-glow {
-            animation: pulse-glow 2s infinite ease-in-out;
+        .animate-glow-gold {
+            animation: pulse-glow-gold 2s infinite ease-in-out;
         }
 
         .slide-in-right {
@@ -105,7 +105,7 @@
         };
 
         const App = () => {
-            const APP_VERSION = "3.6";
+            const APP_VERSION = "3.7";
             const [checkedItems, setCheckedItems] = useState({});
             const [activeCategory, setActiveCategory] = useState(null);
             const [isExiting, setIsExiting] = useState(false);
@@ -419,11 +419,11 @@
                                 ))}
                             </div>
 
-                            {/* New: Global Registration Button on TOP screen */}
+                            {/* New: Global Registration Button on TOP screen (Yellow & Glowing Gold) */}
                             {currentSessionBp > 0 && (
                                 <button 
                                     onClick={completeTraining} 
-                                    className="w-full mt-2 py-6 bg-[#00E676] text-[#0a192f] rounded-[2.5rem] font-black italic uppercase text-xl animate-glow transition-all tracking-widest fade-in"
+                                    className="w-full mt-2 py-6 bg-[#FFD700] text-[#0a192f] rounded-[2.5rem] font-black italic uppercase text-xl animate-glow-gold transition-all tracking-widest fade-in"
                                 >
                                     今日の練習を報告する
                                 </button>
@@ -468,7 +468,7 @@
                                     ))}
                                 </div>
 
-                                {/* Changed: Inside category button is now just a back button to prevent accidental resets */}
+                                {/* Inside category button: Just return to TOP */}
                                 <button 
                                     onClick={handleClose} 
                                     className="w-full mt-4 py-6 bg-white/10 text-white rounded-[2.5rem] font-black italic uppercase text-lg border border-white/20 active:scale-95 transition-transform shrink-0 tracking-widest"
